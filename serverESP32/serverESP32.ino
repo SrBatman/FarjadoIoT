@@ -84,7 +84,7 @@ void loop() {
   }
 
   static String lastValue = "";
-  if (newValue === "fuego") {
+  if (newValue == "fuego") {
     fireCharacteristic->setValue(newValue.c_str());
     fireCharacteristic->notify();
 

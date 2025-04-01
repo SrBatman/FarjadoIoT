@@ -46,6 +46,20 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('gas-status', async(data) => {
+    console.log("💨 Estados del sensor:", data);
+    
+    // Aquí podrías guardar en BD, mandar alertas, etc.
+    socket.broadcast.emit('gas-status', data);
+    await Logs.create({ 
+      username: 'admin',
+      sensor: 'MQ2',
+      type: 'gas', 
+
+    });
+  });
+
+
   // APP móvil pide apagar el buzzer
   socket.on('apagar-buzzer', async() => {
     try {
