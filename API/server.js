@@ -6,8 +6,11 @@ const cors = require('cors');
 require('dotenv').config();
 const { connectDB } = require('./utils/db');
 const authRoutes = require('./routes/auth');
+const logRoutes = require('./routes/logs');
 const app = express();
 const server = http.createServer(app);
+const Logs = require('./models/Logs');
+
 const io = require('socket.io')(server, {
   cors: {
     origin: '*',
@@ -26,14 +29,21 @@ io.on('connection', (socket) => {
   // Cuando se conecta el ESP32
   socket.on('esp32-ready', () => {
     esp32Socket = socket;
-    console.log('✅ ESP32 reegistrado');
+    console.log('✅ ESP32 registrado');
   });
 
   // ESP32 envía estado del sensor
-  socket.on('fire-status', (data) => {
+  socket.on('fire-status', async(data) => {
     console.log("🔥 Estados del sensor:", data);
+    
     // Aquí podrías guardar en BD, mandar alertas, etc.
     socket.broadcast.emit('fire-status', data);
+    await Logs.create({ 
+      username: 'admin',
+      sensor: 'KY-026',
+      type: 'fuego', 
+
+    });
   });
 
   // APP móvil pide apagar el buzzer
@@ -42,6 +52,17 @@ io.on('connection', (socket) => {
       console.log('🧪 Enviando solicitud al ESP32 vía HTTP...');
   
       const response = await axios.post('http://192.168.100.2/apagar-buzzer');
+      const log = await Logs.findOne().sort({ createdAt: -1 });
+      if (log) {
+        // Modificar el campo
+        log.endedDate = Date.now(); // o cualquier otro valor
+      
+        // Guardar el cambio
+        await log.save();
+        console.log('endedDate actualizado:', log);
+      } else {
+        console.log('No se encontró ningún log.');
+      }
       console.log('✅ Respuesta del ESP32:', response.data);
     } catch (err) {
       console.error('❌ Error aal contactar al ESP32:', err.message);
@@ -67,7 +88,8 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use('/api', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/logs', logRoutes);
 app.get('/', (req, res) => {
   res.send("🔥 API FireSensor con Socket.IO está corriendo.");
 });

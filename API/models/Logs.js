@@ -4,15 +4,20 @@ const logSchema = new Schema({
     username: {
       type: String,
       required: true,
-      unique: true,
+      default: 'Desconocido',
     },
     sensor: {
       type: String,
       required: true,
     },
-    endedDate: {
+    type: {
       type: String,
       required: true,
+    },
+    endedDate: {
+      type: Number,
+      required: false,
+      default: null,
     },
   }, {
     timestamps: true,

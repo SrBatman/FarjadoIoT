@@ -5,14 +5,8 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const multer = require('multer');
 const upload = multer();
-const logins = {
-    admin1: "admin1",
-    admin2: "admin2",
-    admin3: "admin3"
-}
 
-
-const JWT_SECRET = 'aS23GHFdGFDHdscsx21$@!'; // ⚠️ usa dotenv en producción
+const JWT_SECRET = process.env.JWT_SECRET; // ⚠️ usa dotenv en producción
 
 // POST /api/login
 router.post('/login', upload.none(), async (req, res) => {
@@ -29,7 +23,7 @@ router.post('/login', upload.none(), async (req, res) => {
     // Buscar al admin por username
     const admin = await Admin.findOne({ username });
     if (!admin) {
-      return res.status(401).json({ message: 'Usuario no encontrado' });
+      return res.status(401).json({ message: 'Usuario n encontrado' });
     }
 
     // Verificar contraseña
